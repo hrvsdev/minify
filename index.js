@@ -1,25 +1,18 @@
 const express = require("express");
-const randomString = require("randomstring")
-const urlencode = require('urlencode');
+const connectDB = require("./db/connectDB");
+const Url = require("./db/Url");
+// const normalizeUrl = require("normalize-url")
 
 const app = express();
+connectDB();
 
-const links = {
-  abcd: "https://www.google.com",
-  xyz: "https://www.youtube.com",
-};
-
-app.get("/create/:url", (req, res) => {
-  const {url} = req.params
-  const str = randomString.generate(4)
-  links[str] = url
-  res.send({yourUrl: url, shortUrl: `http://localhost:5000/${str}`})
+app.get("/mini", async (req, res) => {
+  const { real } = req.query;
+  const url = await new Url({
+    realUrl: real
+  });
+  await url.save()
+  res.send({url})
 });
 
-app.get("/:link", (req, res) => {
-  const { link } = req.params;
-  if (links[link]) res.redirect(`https://${links[link]}`);
-  else res.status(404).send("Does not exist !! Create One")
-});
-
-app.listen(5000);
+app.listen(process.env.PORT || 5000);
